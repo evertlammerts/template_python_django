@@ -1,0 +1,37 @@
+version: "3.0"
+services:
+  database:
+    image: amsterdam/postgres
+    ports:
+      - "5412:5432"
+    environment:
+      POSTGRES_DB: template_django_project
+      POSTGRES_USER: template_python_django
+      POSTGRES_PASSWORD: insecure
+    volumes:
+      - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
+
+  elasticsearch:
+    image: amsterdam/elasticsearch6
+    command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  web:
+    build: src/
+    ports:
+      - "8109:8000"
+    links:
+      - database
+    environment:
+      - DATAPUNT_API_URL=${DATAPUNT_API_URL:-https://api.data.amsterdam.nl/}
+      - SECRET_KEY=insecure
+      - DATABASE_NAME=template_python_django
+      - DATABASE_USER=template_python_django
+      - DATABASE_PASSWORD=insecure
+      - JWT_SHARED_SECRET_KEY=insecure1234567890
+      - UWSGI_HTTP=0.0.0.0:8000
+      - UWSGI_MODULE=template_python_django.wsgi
+      - UWSGI_CALLABLE=application
+      - UWSGI_MASTER=1

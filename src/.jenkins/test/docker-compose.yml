@@ -1,0 +1,28 @@
+version: "3.0"
+services:
+  database:
+    image: amsterdam/postgres
+    environment:
+      POSTGRES_DB: template_python_django
+      POSTGRES_USER: template_python_django
+      POSTGRES_PASSWORD: insecure
+
+  elasticsearch:
+    image: amsterdam/elasticsearch5
+    command:  elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
+
+  tests:
+    build: ../../
+    links:
+      - elasticsearch
+      - database
+    environment:
+      DATABASE_NAME: template_python_django
+      DATABASE_USER: template_python_django
+      DATABASE_PASSWORD: insecure
+      JWT_SHARED_SECRET_KEY: insecure1234567890
+    command: >
+      bash -c "/app/.jenkins/docker-wait.sh \
+              && cd /app/.jenkins/test/ \
+              && ./docker-code-check.sh \
+              && ./docker-test.sh"

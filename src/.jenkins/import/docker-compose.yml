@@ -1,0 +1,30 @@
+version: "3.0"
+services:
+  database:
+    image: amsterdam/postgres
+    environment:
+      POSTGRES_PASSWORD: insecure
+      POSTGRES_USER: template_python_django
+    volumes:
+      - ./backups:/tmp/backups
+
+  elasticsearch:
+    image: amsterdam/elasticsearch6
+    command:  elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
+    user: root
+    volumes:
+      - ./backups/elasticsearch:/tmp/backups
+
+  importer:
+    image: build.datapunt.amsterdam.nl:5000/datapunt/template_python_django:${ENVIRONMENT}
+    links:
+      - database
+      - elasticsearch
+    environment:
+      TEMPLATE_PYTHON_DJANGO_OBJECTSTORE_PASSWORD: ${TEMPLATE_PYTHON_DJANGO_OBJECTSTORE_PASSWORD}
+      DATABASE_NAME: template_python_django
+      DATABASE_USER: template_python_django
+      DATABASE_PASSWORD: insecure
+      DATAPUNT_API_URL: ${DATAPUNT_API_URL:-https://api.data.amsterdam.nl/}
+    command: >
+      bash -c "/.jenkins/import/docker-import-db.sh"
