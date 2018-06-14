@@ -30,7 +30,6 @@ services:
       - DATABASE_NAME=template_python_django
       - DATABASE_USER=template_python_django
       - DATABASE_PASSWORD=insecure
-      - JWT_SHARED_SECRET_KEY=insecure1234567890
       - UWSGI_HTTP=0.0.0.0:8000
       - UWSGI_MODULE=template_python_django.wsgi
       - UWSGI_CALLABLE=application
